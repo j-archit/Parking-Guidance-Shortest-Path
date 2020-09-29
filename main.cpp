@@ -48,12 +48,14 @@ class parking_lots
     void update_dist(int);
 
     void print();
+
+    void delete_mem();
 };
 
 // Member Functions Definitions
 parking_lots::parking_lots()
 {
-  cout << "Parking Lots + 1: " ;
+  cout << "Nodes: " ;
   cin >> N;
 
   // Allocate and Initialise the Graph
@@ -73,10 +75,13 @@ parking_lots::parking_lots()
   empty[0] = -1;          // Source Node not available for parking (Entrance)
   for(int i = 1; i < N; i++)
     empty[i] = 1;
+
+  cout<<"3";
 }
 
 void parking_lots::shortest()
 {
+  cout<<"2";
   // Allocate and Initialise visited array
   visited = new int[N];
   for(int i = 0; i < N; i++)
@@ -85,6 +90,7 @@ void parking_lots::shortest()
   // Source (Entrance, 0) as initial node
   int curr;
   path_prev[0] = 0;
+  cout<<"1";
   while(not_vis())
   {
     curr = min_not_visited();
@@ -174,11 +180,21 @@ void parking_lots::print()
     cout << path_prev[i] << "\t";
 }
 
+void parking_lots::delete_mem()
+{
+  delete [] graph;
+  delete [] dist;
+  delete [] empty;
+  delete [] visited;
+  delete [] path_prev;
+}
+
 int main()
 {
   parking_lots lot;
   lot.shortest();
   lot.print();
 
+  lot.delete_mem();
   return 0;
 }
