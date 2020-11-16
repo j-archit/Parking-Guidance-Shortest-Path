@@ -74,7 +74,7 @@ class vertex
       dist = INT32_MAX;
       pathprev = ID;
       visited = false;
-      lotempty = false;
+      lotempty = true;
     }    
 
     void print()
@@ -93,6 +93,7 @@ class parking_lots
   private:
     int N;
     vertex source;
+    int* path_arr;
 
     // Builds the required list for the graph
     void buildgraph();
@@ -107,22 +108,39 @@ class parking_lots
 
     // Calculates Shortest distances from Source Node(0) to all nodes
     void shortest();
+
+    // Initializes the path_arr with path prev values
+    void arr_path();
     
   public:
     // Default Constructor
     parking_lots();
 
-    // Prints all the graph info list
+    // Prints all the graph info
     void print();
 
-    // Prints Current Distances of all vertices
-    void print_dist();
+    /* 
+      Prints the values of a member variable
+      1 - distance
+      2 - lotempty
+    */
+    void print_mem(int mem);
 
-    // Prints Shortest Path Node by Node
-    void print_path();
+    /* 
+      Prints Shortest Path 
+      To all Nodes if no parameter is passed
+      Or to the Node passed as parameter
+    */
+    void print_path(int ID = 0);
+
+    // Returns the number of Available Empty Lots now.
+    int available();
 
     // Reserves a parking node and Prints the Path to it
     void provide_lot();
+
+    // Frees the empty parking lot with nodeID, ID - Under developement
+    void free_lot(int ID);
 };
 
 // Member Functions Definitions
@@ -219,15 +237,6 @@ void parking_lots::update_dist(int ID)
   vert->visited = true;
 }
 
-parking_lots::parking_lots()
-{
-  buildgraph();
-  shortest();
-  print();
-  print_dist();
-  print_path();
-}
-
 void parking_lots::shortest()
 {
   int node = 0;
@@ -238,79 +247,152 @@ void parking_lots::shortest()
   }
 }
 
+void parking_lots::arr_path()
+{
+  path_arr = new int[N];
+  vertex* vert = &source;
+  // Reach the source vertex 
+  for(int i = 0; i < N; i++)
+  {
+    path_arr[i] = vert->pathprev;
+    vert = vert->next;
+  }
+}
+
+parking_lots::parking_lots()
+{
+  buildgraph();
+  shortest();
+  arr_path();
+}
+
 void parking_lots::print()
 {
   vertex* current = &source;
-  do
+  while (current != nullptr)
   {
     edge_node* edge = current->nextedge;
 
     current->print();
     current = current->next;
-    do
+    while (edge != nullptr)
     {
       edge->print();
       edge = edge->nextedge;
-    } while (edge != nullptr);
-    
-  } while (current != nullptr);
-  
+    } 
+  }
 }
 
-void parking_lots::print_dist()
+void parking_lots::print_mem(int mem)
 {
   vertex* vert = &source;
   // Reach the source vertex 
-  cout << "Distances" << endl;
+  mem == 1 ? cout << "Distances" << endl : cout << "Availability" <<endl;
+  int k;
   for(int i = 0; i < N; i++)
   {
-    cout << "Vertex " << vert->nodeID << ":" << vert->dist <<endl;
+    mem == 1 ? k = vert->dist : k = vert->lotempty;
+    cout << "Vertex " << vert->nodeID << ":" << k <<endl;
     vert = vert->next;
   } 
 }
 
-void parking_lots::print_path()
+void parking_lots::print_path(int ID)
 {
-  int* path_arr = new int[N];
-  vertex* vert = &source;
-  // Reach the source vertex 
-  for(int i = 0; i < N; i++)
-  {
-    *(path_arr + i) = vert->pathprev;
-    vert = vert->next;
-  }
-  cout << "Path" << endl;
-  for(int node = 0; node < N; node++)
+  int node = ID;
+  for( ;node < N; node++)
   {
     int p = node;
-    cout << "Vertex " << node << ":";
+    cout << "Lot " << node << ":";
     while( p != 0 )
     {
       cout << *(path_arr + p) << " ";
       p = *(path_arr + p);
     }
-    cout<< endl;
+    cout << "0" << endl;
+    if( ID != 0 )
+      break;
   }
+}
+
+int parking_lots::available()
+{
+  int count = 0;
+  vertex* vert = &source;
+  while(vert != nullptr)
+  {
+    if(vert->lotempty)
+      count++;
+    vert = vert->next;
+  }
+  return count;
 }
 
 void parking_lots::provide_lot()
 {
-
+  int min = INT32_MAX;
+  int lotID = 0;
+  vertex* vert = source.next;
+  while(vert != nullptr)
+  {
+    if(vert->lotempty && vert->dist < min)
+    {
+      min = vert->dist;
+      lotID = vert->nodeID;
+      cout << lotID << endl;
+    }
+    vert = vert->next;
+  }
+  if(lotID == 0)
+    cout << "The Parking is Full right now, We are sorry for the Inconvenience caused." << endl;
+  else
+  {
+    cout << "The following parking has been reserved for you: ";
+    print_path(lotID);
+    vert = &source;
+    while(vert->nodeID != lotID)
+      vert = vert->next;
+    vert->lotempty = false;
+  }
+  
 }
+
+void parking_lots::free_lot(int ID)
+{
+  vertex* vert = &source;
+  while(vert->nodeID != ID)
+    vert = vert->next;
+  vert->lotempty = true;
+}
+
 
 int main()
 {
   parking_lots lot;
 
-  return 0;
-
-  int exit_cont = 1;
-  while(exit_cont)
+  int menu = 5;
+  while( menu )
   {
-    cout << "Enter 1 for a Ticket, 0 to exit" << endl;
-    cin >> exit_cont;
-    if(!exit_cont)
-      break;
-    //lot.provide_lot();
+    cout << ":Welcome to Automated Parking:" << endl;
+    cout << lot.available() << " space(s) available" << endl;
+    cout << "1-Parking Ticket " << endl;
+    cout << "2-Leave Parking " << endl;
+    cout << "0-Exit" << endl;
+    cout << "Your Choice:";
+    cin >> menu;
+    switch (menu)
+    {
+        case 1: {
+          lot.provide_lot();
+          break;
+        }
+        case 2: {
+          cout << "Enter LotID: ";
+          cin >> menu;
+          lot.free_lot(menu);
+        }
+        case 0: break;
+    }  
   }
+  return 0;
 }
