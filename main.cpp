@@ -11,6 +11,7 @@
 
 #include<iostream>
 #include<climits>
+#include<fstream>
 using namespace std;
 
 class edge_node
@@ -368,6 +369,8 @@ void parking_lots::free_lot(int ID)
 
 int main()
 {
+  fstream f;
+  
   parking_lots lot;
 
   int menu = 5;
